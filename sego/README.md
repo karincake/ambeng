@@ -1,5 +1,5 @@
 # Sego
-Package to help in filling struct with data from various sources. 
+Functions to fill struct with data from various sources.
 
 ## Installation and Usage
 Get the package
