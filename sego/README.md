@@ -1,4 +1,4 @@
-# Sego
+# Sego - Struct Filler
 Functions to fill struct with data from various sources.
 
 ## Installation and Usage
