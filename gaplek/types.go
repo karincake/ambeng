@@ -1,4 +1,4 @@
-package getuk
+package gaplek
 
 import (
 	"time"

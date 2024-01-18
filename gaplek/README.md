@@ -1,5 +1,5 @@
-# getuk
-Helper package for package GORM, mostly related to scopes.
+# Gaplek - Gorm Helper
+Helper for package GORM in doing some queries.
 
 ## Features
 1. Filter

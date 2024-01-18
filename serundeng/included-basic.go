@@ -6,6 +6,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"time"
 
 	h "github.com/karincake/ambeng/serundeng/helper"
 )
@@ -35,6 +36,14 @@ func requiredTagValidator(val reflect.Value, expectVal string) error {
 		return Errors["required"]
 	} else if kind >= reflect.Float32 && kind <= reflect.Float64 && expectVal != "allowZero" && val.Float() == 0 {
 		return Errors["required"]
+	} else if kind == reflect.Struct {
+		dtype := val.Type().String()
+		if dtype == "time.Time" {
+			original := val.Interface().(time.Time)
+			if original.IsZero() {
+				return Errors["required"]
+			}
+		}
 	}
 	return nil
 }

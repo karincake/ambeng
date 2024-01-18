@@ -15,12 +15,12 @@ Functions to fill struct with data from various sources.
 Functions to validate struct
 
 ### Gaplek - Gorm Helper
-Functions that helps package GORM in getting data.
+Functions that helps package GORM in querying data.
 
-#### Lepet - Language
+### Lepet - Language
 Functions to generate word or sentence in the desired language
 
-#### Rendang - Response Writer
+### Rendang - Response Writer
 Functions to help generate structured response
 
 ## Trivia
