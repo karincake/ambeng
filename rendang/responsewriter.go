@@ -16,6 +16,10 @@ import (
 	te "github.com/karincake/ambeng/tempe"
 )
 
+func UseLang(src *lg.LangData) {
+	lg.I = src
+}
+
 // The primary function that writes json output through http.ResponseWriter
 func WriteJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) {
 	js, err := json.Marshal(data)
@@ -53,13 +57,13 @@ func WriteError(w http.ResponseWriter, err te.XError) {
 // data field which can have more than one error. Any non-field error, which
 // normally a single error will be disposed to WriteError funcion
 func DataResponse(w http.ResponseWriter, data, err any) {
-	if data != nil && err == nil {
+	v := reflect.ValueOf(data)
+	if (data != nil && !v.IsNil()) && err == nil {
 		if dataVal, ok := data.(td.Data); ok {
 			WriteJSON(w, http.StatusOK, dataVal, nil)
 		} else if message, ok := data.(string); ok {
 			WriteJSON(w, http.StatusOK, td.IS{"message": message}, nil)
 		} else {
-			v := reflect.ValueOf(data)
 			for v.Kind() == reflect.Ptr {
 				v = v.Elem()
 			}

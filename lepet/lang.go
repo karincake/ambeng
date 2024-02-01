@@ -1,87 +1,61 @@
 package lepet
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io/ioutil"
-	"os"
-
 	"golang.org/x/exp/maps"
 )
 
 // Configuration type that is used by the core
-type LangConf struct {
-	Active   string
-	Path     string
-	FileName string
-}
-
-type langItem map[string]string
-type langData struct {
+type LangItem map[string]string
+type LangData struct {
 	Active string
-	list   map[string]langItem
+	List   map[string]LangItem
 }
 
 // Instance of the language
-var I *langData // instance
+var I *LangData // instance
 
-func New() langData {
-	return langData{}
+func New() LangData {
+	return LangData{}
 }
 
-func Init(conf LangConf) error {
-	I = &langData{}
-	I.Active = conf.Active
-	I.list = map[string]langItem{"en": defaultList}
-
-	jsonFile, err := os.Open(fmt.Sprintf("%v/%v/%v", conf.Path, conf.Active, conf.FileName))
-	if err != nil {
-		return errors.New("failed to load source file. " + err.Error())
-	}
-	defer jsonFile.Close()
-
-	var myLI langItem = langItem{}
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	json.Unmarshal(byteValue, &myLI)
-	maps.Copy(I.list["en"], myLI)
-	return nil
+func (a *LangData) SetList(ln string, l LangItem) {
+	a.List = map[string]LangItem{ln: l}
 }
 
-func (a *langData) Add(name string) {
-	_, ok := a.list[name]
+func (a *LangData) Add(name string) {
+	_, ok := a.List[name]
 	if !ok {
-		a.list[name] = langItem{}
+		a.List[name] = LangItem{}
 	}
 }
 
-func (a *langData) AddMsg(code string, message string, opt ...string) {
+func (a *LangData) AddMsg(code string, message string, opt ...string) {
 	lang := a.Active
 	if len(opt) > 0 {
 		a.Add(opt[1])
 		lang = opt[1]
 	}
-	a.list[lang][code] = message
+	a.List[lang][code] = message
 }
 
-func (a *langData) AddMsgList(list langItem, opt ...string) {
-	lang := a.Active
-	if len(opt) > 0 {
-		a.Add(opt[1])
-		lang = opt[1]
-	}
-
-	maps.Copy(a.list[lang], list)
-}
-
-func (a *langData) Msg(k string, opt ...string) string {
+func (a *LangData) AddMsgList(list LangItem, opt ...string) {
 	lang := a.Active
 	if len(opt) > 0 {
 		a.Add(opt[1])
 		lang = opt[1]
 	}
 
-	if msg, ok := a.list[lang][k]; !ok {
+	maps.Copy(a.List[lang], list)
+}
+
+func (a *LangData) Msg(k string, opt ...string) string {
+	lang := a.Active
+	if len(opt) > 0 {
+		a.Add(opt[1])
+		lang = opt[1]
+	}
+
+	if msg, ok := a.List[lang][k]; !ok {
 		return "** warning: usage of unlisted code **"
 	} else {
 		return msg
