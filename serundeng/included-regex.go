@@ -15,6 +15,7 @@ func init() {
 	AddTagForRegex("alphaSpace", "^[a-zA-Z ]+$", "must be alphabet, and allowed to place space within it")
 	AddTagForRegex("alphaNumeric", "^[a-zA-Z0-9]+$", "must be alphabet or number")
 	AddTagForRegex("alphaUnder", "^[a-zA-Z_]+$", "must be alphabet or underscore")
+	AddTagForRegex("alphaNumericSpace", "^[a-zA-Z0-9 ]+$", "must be alphabet, number, or underscore")
 	AddTagForRegex("alphaNumericUnder", "^[a-zA-Z0-9_]+$", "must be alphabet, number, or underscore")
 	AddTagForRegex("numeric", "^[0-9]+$", "must be numeric")
 	AddTagForRegex("numval", "[-+]?[0-9]+(?:\\.[0-9]+)?$", "must be value of numeric")

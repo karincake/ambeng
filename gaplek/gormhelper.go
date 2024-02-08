@@ -38,7 +38,7 @@ func Filter(input interface{}) func(db *gorm.DB) *gorm.DB {
 			}
 
 			// skip option and pagination related
-			if opt == "_Opt" || iTF.Name == "Page" || iTF.Name == "PageSize" || iTF.Name == "NoPagination" {
+			if opt == "_Opt" || iTF.Name == "Page" || iTF.Name == "PageSize" || iTF.Name == "NoPagination" || iTF.Name == "OrderBy" || iTF.Name == "OrderMode" {
 				continue
 			}
 
