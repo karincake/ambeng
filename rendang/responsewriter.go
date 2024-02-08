@@ -58,7 +58,8 @@ func WriteError(w http.ResponseWriter, err te.XError) {
 // normally a single error will be disposed to WriteError funcion
 func DataResponse(w http.ResponseWriter, data, err any) {
 	v := reflect.ValueOf(data)
-	if (data != nil && !v.IsNil()) && err == nil {
+	vKind := v.Kind()
+	if (data != nil || (vKind == reflect.Pointer && !v.IsNil())) && err == nil {
 		if dataVal, ok := data.(td.Data); ok {
 			WriteJSON(w, http.StatusOK, dataVal, nil)
 		} else if message, ok := data.(string); ok {
@@ -67,7 +68,7 @@ func DataResponse(w http.ResponseWriter, data, err any) {
 			for v.Kind() == reflect.Ptr {
 				v = v.Elem()
 			}
-			vKind := v.Kind()
+			vKind = v.Kind()
 			if vKind != reflect.Struct && vKind != reflect.Map {
 				WriteJSON(w, http.StatusOK, td.II{"value": data}, nil)
 			} else {

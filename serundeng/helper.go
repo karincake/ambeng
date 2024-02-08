@@ -134,7 +134,7 @@ func keyOrJsonTag(key, jsonTag string) string {
 	pos := len(tagByte)
 	for i, v := range tagByte {
 		if v == 44 { // 44 is for character ","
-			pos = i + 1
+			pos = i
 		}
 	}
 	return string(tagByte[:pos])
