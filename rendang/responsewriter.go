@@ -59,22 +59,11 @@ func WriteError(w http.ResponseWriter, err te.XError) {
 func DataResponse(w http.ResponseWriter, data, err any) {
 	v := reflect.ValueOf(data)
 	vKind := v.Kind()
-	if (data != nil || (vKind == reflect.Pointer && !v.IsNil())) && err == nil {
-		if dataVal, ok := data.(td.Data); ok {
-			WriteJSON(w, http.StatusOK, dataVal, nil)
-		} else if message, ok := data.(string); ok {
-			WriteJSON(w, http.StatusOK, td.IS{"message": message}, nil)
-		} else {
-			for v.Kind() == reflect.Ptr {
-				v = v.Elem()
-			}
-			vKind = v.Kind()
-			if vKind != reflect.Struct && vKind != reflect.Map {
-				WriteJSON(w, http.StatusOK, td.II{"value": data}, nil)
-			} else {
-				WriteJSON(w, http.StatusOK, data, nil)
-			}
-		}
+	if (data == nil || (vKind == reflect.Pointer && v.IsNil())) && err == nil {
+		WriteJSON(w, http.StatusNotFound, te.XError{
+			Code:    "data-notFound",
+			Message: lg.I.Msg("data-notFound"),
+		}, nil)
 	} else if err != nil {
 		if stringErr, ok := err.(string); ok {
 			WriteJSON(w, http.StatusUnprocessableEntity, td.IS{"Message": stringErr}, nil)
@@ -102,11 +91,26 @@ func DataResponse(w http.ResponseWriter, data, err any) {
 			}
 		}
 	} else {
-		WriteJSON(w, http.StatusNotFound, te.XError{
-			Code:    "data-notFound",
-			Message: lg.I.Msg("data-notFound"),
-		}, nil)
+		if dataVal, ok := data.(td.Data); ok {
+			WriteJSON(w, http.StatusOK, dataVal, nil)
+		} else if message, ok := data.(string); ok {
+			WriteJSON(w, http.StatusOK, td.IS{"message": message}, nil)
+		} else {
+			for v.Kind() == reflect.Ptr {
+				v = v.Elem()
+			}
+			vKind = v.Kind()
+			if vKind != reflect.Struct && vKind != reflect.Map {
+				WriteJSON(w, http.StatusOK, td.II{"value": data}, nil)
+			} else {
+				WriteJSON(w, http.StatusOK, data, nil)
+			}
+		}
 	}
+	// if (vKind != reflect.Pointer && data != nil) || (vKind == reflect.Pointer && !v.IsNil())) && err == nil {
+	// } else if err != nil {
+	// } else {
+	// }
 }
 
 // Validates a string assuming the field is required.
