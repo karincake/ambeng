@@ -9,6 +9,7 @@ type XError struct {
 	Message     string `json:"message,omitempty"`
 	ExpectedVal string `json:"expectedVal,omitempty"`
 	GivenVal    any    `json:"givenVal,omitempty"`
+	EmbedSource string `json:"embedSource,omitempty"`
 }
 
 func (i XError) Error() string {
