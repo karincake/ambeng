@@ -37,9 +37,10 @@ var tagFVs map[string]fv = map[string]fv{}
 // special case, regex and field comparison
 // var tagRegexes map[string]string
 var regexes map[string]*regexp.Regexp = map[string]*regexp.Regexp{}
-var fields map[string]string = map[string]string{}
 
-var required = "required"
+// var fields map[string]string = map[string]string{}
+
+// var required = "required"
 
 // Validation of each field based on the registered tag
 func Validate(input any, nameSpaces ...string) error {
@@ -58,9 +59,10 @@ func Validate(input any, nameSpaces ...string) error {
 
 	// namespace will be available if it is sub validation
 	nameSpace := ""
+	eNameSpace := ""
 	if len(nameSpaces) > 0 {
 		if len(nameSpaces) > 1 && nameSpaces[1] != "" {
-			nameSpace += "(" + nameSpaces[0] + ")."
+			eNameSpace = nameSpaces[0]
 		} else {
 			nameSpace += nameSpaces[0] + "."
 		}
@@ -97,7 +99,7 @@ func Validate(input any, nameSpaces ...string) error {
 			if (rc.fieldT[i].Type.Kind() == reflect.Struct) && rc.typeString[i] != "time.Time" {
 				embeddedMode := ""
 				if rc.fieldT[i].Anonymous {
-					embeddedMode = "(embedded)"
+					embeddedMode = "YES"
 				}
 				errList.Import(Validate(fieldV.Interface(), rc.key[i], embeddedMode).(te.XErrors))
 				continue
@@ -110,7 +112,7 @@ func Validate(input any, nameSpaces ...string) error {
 					checkSliceField(&inputV, rc.parsedTag[i], fieldV, nameSpace, rc.key[i], errList)
 				} else {
 					// non slice
-					checkParsedTag(&inputV, rc.parsedTag[i], fieldV, errList, nameSpace+rc.key[i])
+					checkParsedTag(&inputV, rc.parsedTag[i], fieldV, errList, nameSpace+rc.key[i], eNameSpace)
 				}
 			} else {
 				rc.parsedTag = append(rc.parsedTag, nil)
@@ -133,7 +135,7 @@ func Validate(input any, nameSpaces ...string) error {
 			if (rc.fieldT[i].Type.Kind() == reflect.Struct) && rc.typeString[i] != "time.Time" {
 				embeddedMode := ""
 				if rc.fieldT[i].Anonymous {
-					embeddedMode = "(embedded)"
+					embeddedMode = "YES"
 				}
 				errList.Import(Validate(fieldV.Interface(), rc.key[i], embeddedMode).(te.XErrors))
 				continue
@@ -145,7 +147,7 @@ func Validate(input any, nameSpaces ...string) error {
 					checkSliceField(&inputV, rc.parsedTag[i], fieldV, nameSpace, rc.key[i], errList)
 				} else {
 					// non slice
-					checkParsedTag(&inputV, rc.parsedTag[i], fieldV, errList, nameSpace+rc.key[i])
+					checkParsedTag(&inputV, rc.parsedTag[i], fieldV, errList, nameSpace+rc.key[i], eNameSpace)
 				}
 			}
 		}
@@ -167,7 +169,7 @@ func Validate(input any, nameSpaces ...string) error {
 			if (fieldT.Type.Kind() == reflect.Struct) && typeString != "time.Time" {
 				embeddedMode := ""
 				if fieldT.Anonymous {
-					embeddedMode = "(embedded)"
+					embeddedMode = "YES"
 				}
 				err := Validate(fieldV.Interface(), keyOrJsonTag(fieldT.Name, fieldT.Tag.Get("json")), embeddedMode)
 				if err != nil {
@@ -186,7 +188,7 @@ func Validate(input any, nameSpaces ...string) error {
 					checkSliceField(&inputV, parsedTag, fieldV, nameSpace, key, errList)
 				} else {
 					// non slice
-					checkParsedTag(&inputV, parsedTag, fieldV, errList, nameSpace+key)
+					checkParsedTag(&inputV, parsedTag, fieldV, errList, nameSpace+key, eNameSpace)
 				}
 			}
 		}

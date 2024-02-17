@@ -33,7 +33,7 @@ func parseTag(tag string) []keyVal {
 }
 
 // parse tag using FvFunc
-func checkParsedTag(parent *reflect.Value, parsedTag []keyVal, fv reflect.Value, el te.XErrors, key string) {
+func checkParsedTag(parent *reflect.Value, parsedTag []keyVal, fv reflect.Value, el te.XErrors, key, eNameSpace string) {
 	for _, kv := range parsedTag {
 		if _, ok := tagFVs[kv.Key]; ok {
 			localFvType := tagFVs[kv.Key].FvType
@@ -44,7 +44,13 @@ func checkParsedTag(parent *reflect.Value, parsedTag []keyVal, fv reflect.Value,
 					if kv.Val != "" {
 						expVal = kv.Key + "(" + kv.Val + ")"
 					}
-					el[key] = te.XError{Code: kv.Key, Message: err.Error(), ExpectedVal: expVal, GivenVal: fv.Interface()}
+					el[key] = te.XError{
+						Code:        kv.Key,
+						Message:     err.Error(),
+						ExpectedVal: expVal,
+						GivenVal:    fv.Interface(),
+						EmbedSource: eNameSpace,
+					}
 					break
 				}
 			} else if localFvType == FVTField {
@@ -54,13 +60,25 @@ func checkParsedTag(parent *reflect.Value, parsedTag []keyVal, fv reflect.Value,
 				}
 				err := tagFVs[kv.Key].FvFunc(fv, h.ValStringer(parent.FieldByName(kv.Val)))
 				if err != nil {
-					el[key] = te.XError{Code: kv.Key, Message: err.Error(), ExpectedVal: expVal, GivenVal: fv.Interface()}
+					el[key] = te.XError{
+						Code:        kv.Key,
+						Message:     err.Error(),
+						ExpectedVal: expVal,
+						GivenVal:    fv.Interface(),
+						EmbedSource: eNameSpace,
+					}
 					break
 				}
 			} else if localFvType == FVTRegex {
 				err := tagFVs["regex"].FvFunc(fv, kv.Key)
 				if err != nil {
-					el[key] = te.XError{Code: kv.Key, Message: err.Error(), ExpectedVal: kv.Key, GivenVal: fv.Interface()}
+					el[key] = te.XError{
+						Code:        kv.Key,
+						Message:     err.Error(),
+						ExpectedVal: kv.Key,
+						GivenVal:    fv.Interface(),
+						EmbedSource: eNameSpace,
+					}
 					break
 				}
 			}
@@ -102,7 +120,7 @@ func checkSliceField(parent *reflect.Value, pt []keyVal, fv reflect.Value, nameS
 	} else {
 		for ix := 0; ix < fv.Len(); ix++ {
 			// fv :=
-			checkParsedTag(&fv, pt, fv.Index(ix), el, key+"["+strconv.Itoa(ix)+"]")
+			checkParsedTag(&fv, pt, fv.Index(ix), el, key+"["+strconv.Itoa(ix)+"]", "")
 		}
 	}
 }
