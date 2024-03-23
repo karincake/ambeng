@@ -54,7 +54,7 @@ func Filter(input interface{}) func(db *gorm.DB) *gorm.DB {
 				continue
 			}
 
-			// check opt
+			// check opt (operator)
 			vOpt := "eq"
 			o := iV.FieldByName(iTF.Name + "_Opt") // option
 			if o.IsValid() {
@@ -72,12 +72,26 @@ func Filter(input interface{}) func(db *gorm.DB) *gorm.DB {
 				db.AddError(fmt.Errorf("field %s: opt undefined", iTF.Name))
 			}
 
-			// check source if avaibale
-			refSource := iTF.Tag.Get("refsource")
-			if refSource != "" {
-				refSource = strings.Replace(refSource, ".", "\".\"", -1)
-			} else {
-				refSource = iTF.Name
+			// check other options avaibale
+			refSource := iTF.Name
+			fTag := iTF.Tag.Get("filter")
+			if fTag != "" {
+				fTags := strings.Split(fTag, ";")
+				for _, block := range fTags {
+					parts := strings.Split(strings.Trim(block, " "), "=")
+					if len(parts) == 2 {
+						if parts[0] == "refsource" {
+							refSource = strings.Replace(parts[1], ".", "\".\"", -1)
+						}
+						// if parts[0] == "func" {
+						// 	if refSource != "" {
+						// 		refSource = fmt.Sprintf(parts[1], ) strings.Replace(parts[1], ".", "\".\"", -1)
+						// 	} else {
+						// 		refSource = iTF.Name
+						// 	}
+						// }
+					}
+				}
 			}
 
 			if iTF.Type.String() == "*[]string" {
