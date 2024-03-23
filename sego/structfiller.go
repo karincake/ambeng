@@ -32,9 +32,18 @@ func HttpFormData(container any, r *http.Request) error {
 		// identify field type and value of the field
 		ft := ct.Field(i)
 		fv := cv.Field(i)
+		if ft.Anonymous {
+			if err := setEmbedValue(container, r, []string{ft.Name}); err != nil {
+				return nil
+			}
+			continue
+		}
 
 		for fv.Kind() == reflect.Ptr {
 			fv = fv.Elem()
+		}
+		if cv.Kind() == reflect.Struct {
+			continue
 		}
 		if !fv.CanSet() {
 			continue
@@ -127,6 +136,62 @@ func IOReaderJson(container any, input io.Reader) error {
 			Message:     "failed to parse input, error: " + err.Error(),
 			ExpectedVal: "value of " + structName,
 		}
+	}
+
+	return nil
+}
+
+// embeded helper
+func setEmbedValue(container any, r *http.Request, keyPath []string) error {
+	cv := reflect.ValueOf(container)
+	for cv.Kind() == reflect.Pointer || cv.Kind() == reflect.Interface {
+		cv = cv.Elem()
+	}
+
+	for idx := range keyPath {
+		cv = cv.FieldByName(keyPath[idx])
+		for cv.Kind() == reflect.Pointer || cv.Kind() == reflect.Interface {
+			cv = cv.Elem()
+		}
+	}
+
+	// check each field
+	errList := te.XErrors{}
+	ct := cv.Type()
+	for i := 0; i < cv.NumField(); i++ {
+		// identify field type and value of the field
+		ft := ct.Field(i)
+		fv := cv.Field(i)
+		if ft.Anonymous {
+			setEmbedValue(container, r, append(keyPath, ft.Name))
+			continue
+		}
+
+		for fv.Kind() == reflect.Ptr {
+			fv = fv.Elem()
+		}
+		if !fv.CanSet() {
+			continue
+		}
+
+		key := keyOrJsonTag(ft.Name, ft.Tag.Get("json"))
+		rv := r.PostFormValue(key)
+		if rv == "" {
+			// try once more if fail, mostly not called tho
+			r.ParseForm()
+			rv = r.FormValue(key)
+		}
+
+		fvKind := fv.Kind()
+		ftName := ft.Name
+		err := reflectValueFiller(fv, fvKind, ftName, rv)
+		if err != nil {
+			errList[key] = err.(te.XError)
+		}
+	}
+
+	if len(errList) > 0 {
+		return errList
 	}
 
 	return nil
